@@ -12,4 +12,12 @@ int get(int key);
 // sets the value of a key on the server store
 int put(int key, int value);
 
+typedef struct command
+{
+    int client_id;
+    int seq_num;
+    int instruction;
+    int args[2];
+} command;
+
 #endif

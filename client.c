@@ -60,5 +60,8 @@ int RPC_put(struct rpc_connection *rpc, int key, int value)
 // closes the RPC connection to the server
 void RPC_close(struct rpc_connection *rpc)
 {
+    // we dont need to close the connection corresponding on the server side
+    // and the entry in the call table does not need to be deleted on the server side as well
+    // https://piazza.com/class/ld9mat8xdsalt/post/1892
     close_socket(rpc->recv_socket);
 }
