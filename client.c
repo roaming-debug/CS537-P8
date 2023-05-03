@@ -1,5 +1,6 @@
 #include "client.h"
 #include <stdlib.h>
+#include <string.h>
 #include "serialize_structs.h"
 
 struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
@@ -14,21 +15,27 @@ struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
 // Sleeps the server thread for a few seconds
 void RPC_idle(struct rpc_connection *rpc, int time)
 {
-    // first pack identifier for desired function (idle), args, client id, and seq_number into payload
-    // probably use a struct to organize this
+    // first pack client id, seq number, identifier for desired function (idle=0), and args into payload
     command idle_call;
+    idle_call.client_id = rpc->client_id;
+    idle_call.seq_num = rpc->seq_number++;
+    idle_call.instruction = 0;
+    idle_call.args[0] = time;
+
+    char* payload = (char*)malloc(sizeof(command));
+    memcpy(payload, &idle_call, sizeof(command));
     
     // then send packet with this payload
-    // send_packet(rpc->recv_socket, rpc->dst_addr, rpc->dst_addr, );
+    send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
     
     int num_tries = 1;
     struct packet_info packet;
     while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
         if (packet.recv_len != 0) { // valid packet
-            if (0) { // TODO change this to if ACK recieved
+            if (strcmp(packet.buf, "ack")) { // TODO change this if different ack message
                 sleep(1);
-                // send_packet()
+                send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
                 num_tries = 1;
                 continue;
             } else if (0) { // TODO change this to if packet has other client ID or old seq number
@@ -37,10 +44,11 @@ void RPC_idle(struct rpc_connection *rpc, int time)
                 break;
             }
         } else { // socket timed out, retry
-            // send_packet()
+            send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
             num_tries++;
         }
     }
+    free(payload);
     if (num_tries > 5) {
         printf("Error: RPC request timed out 5 times");
         exit(1);
