@@ -19,25 +19,28 @@ void RPC_idle(struct rpc_connection *rpc, int time)
     // then send packet with this payload
     // send_packet(rpc->recv_socket, rpc->dst_addr, rpc->dst_addr, );
     
-    int num_retries = 0;
+    int num_tries = 1;
     struct packet_info packet;
-    while (num_retries <= 5) {
+    while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
-        if (packet.recv_len != 0) {
+        if (packet.recv_len != 0) { // valid packet
             if (0) { // TODO change this to if ACK recieved
                 sleep(1);
-                num_retries = 0;
+                // send_packet()
+                num_tries = 1;
                 continue;
             } else if (0) { // TODO change this to if packet has other client ID or old seq number
-                continue;
+                continue; // ignore
             } else { // correct packet recieived
                 break;
             }
+        } else { // socket timed out, retry
+            // send_packet()
+            num_tries++;
         }
-        num_retries++;
     }
-    if (num_retries > 5) {
-        printf("Retry failed");
+    if (num_tries > 5) {
+        printf("Error: RPC request timed out 5 times");
         exit(1);
     }
 }
