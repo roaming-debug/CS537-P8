@@ -1,5 +1,6 @@
 #include "server_functions.h"
 #include "udp.h"
+#include "serialize_structs.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,7 +35,7 @@ int index_of_client_id(int client_id)
 
 void* handle_packet(void* arg)
 {
-    packet_info* packet = (packet_info*) arg;
+    struct packet_info* packet = (struct packet_info*) arg;
     command* com = (command *) packet->buf;
     if(index_of_client_id(com->client_id) == -1)
     {
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     int threads_used = 0;
 
     while (1) {
-        packet_info* packet = (packet_info*) malloc(sizeof(packet_info));
+        struct packet_info* packet = (struct packet_info*) malloc(sizeof(struct packet_info));
         *packet = receive_packet(s);
         pthread_create(&threads[threads_used++], NULL, handle_packet, (void*) packet);
         if (threads_used == thread_size)

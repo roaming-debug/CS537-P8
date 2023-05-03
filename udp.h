@@ -11,12 +11,12 @@ struct socket{
     int fd;
 };
 
-typedef struct packet_info{
+struct packet_info{
     struct sockaddr sock;
     int recv_len;
     unsigned int slen;
     char buf[BUFLEN];
-} packet_info;
+};
 
 void die(char *s);
 struct socket init_socket(int port);

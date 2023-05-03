@@ -1,5 +1,6 @@
 #include "client.h"
 #include <stdlib.h>
+#include "serialize_structs.h"
 
 struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
 {
@@ -15,7 +16,8 @@ void RPC_idle(struct rpc_connection *rpc, int time)
 {
     // first pack identifier for desired function (idle), args, client id, and seq_number into payload
     // probably use a struct to organize this
-
+    command idle_call;
+    
     // then send packet with this payload
     // send_packet(rpc->recv_socket, rpc->dst_addr, rpc->dst_addr, );
     
@@ -60,8 +62,5 @@ int RPC_put(struct rpc_connection *rpc, int key, int value)
 // closes the RPC connection to the server
 void RPC_close(struct rpc_connection *rpc)
 {
-    // we dont need to close the connection corresponding on the server side
-    // and the entry in the call table does not need to be deleted on the server side as well
-    // https://piazza.com/class/ld9mat8xdsalt/post/1892
     close_socket(rpc->recv_socket);
 }
