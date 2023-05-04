@@ -2,4 +2,6 @@ server
 app1
 app2a
 app2b
+app3
+app4
 *.o
