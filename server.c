@@ -150,7 +150,7 @@ int main(int argc, char **argv)
         {
             client *c = (client *)malloc(sizeof(client));
             c->client_id = com->client_id;
-            c->last_seq_number = -1;
+            c->last_seq_number = com->seq_num;
             c->last_result = 0;
             c->instruction = com->instruction_or_result;
             c->args[0] = com->args[0];
