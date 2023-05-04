@@ -19,7 +19,7 @@ void RPC_idle(struct rpc_connection *rpc, int time)
     command idle_call;
     idle_call.client_id = rpc->client_id;
     idle_call.seq_num = rpc->seq_number++;
-    idle_call.instruction = 0;
+    idle_call.instruction_or_result = 0;
     idle_call.args[0] = time;
 
     char* payload = (char*)malloc(sizeof(command));
