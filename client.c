@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 #include "serialize_structs.h"
 
 struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
@@ -15,6 +16,7 @@ struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
     connection.dst_addr = *((struct sockaddr *)(&addr));
     connection.dst_len = addrlen;
     connection.seq_number = 0;
+    srand(time(NULL));
     connection.client_id = rand();
     return connection;
 }

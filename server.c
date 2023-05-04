@@ -145,10 +145,11 @@ int main(int argc, char **argv)
         struct packet_info packet = receive_packet(s);
         command *com = (command*) malloc(sizeof(command));
         *com = * (command *)packet.buf;
+        printf("client_id: %d, seq_num: %d, instruction: %d, args[0]: %d, args[1]: %d\n", com->client_id, com->seq_num, com->instruction_or_result, com->args[0], com->args[1]);
         int i_client_id;
         if ((i_client_id = index_of_client_id(com->client_id)) == -1)
         {
-            client *c = (client *)malloc(sizeof(client));
+            client *c = &call_table[num_clients];
             c->client_id = com->client_id;
             c->last_seq_number = com->seq_num;
             c->last_result = 0;
