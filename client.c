@@ -16,7 +16,7 @@ void RPC_idle(struct rpc_connection *rpc, int time)
 {
     // first pack identifier for desired function (idle), args, client id, and seq_number into payload
     // probably use a struct to organize this
-    command idle_call;
+    command_req idle_call;
     
     // then send packet with this payload
     // send_packet(rpc->recv_socket, rpc->dst_addr, rpc->dst_addr, );
