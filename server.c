@@ -147,10 +147,15 @@ int main(int argc, char **argv)
         struct packet_info packet = receive_packet(s);
         command *com = (command*) malloc(sizeof(command));
         *com = * (command *)packet.buf;
-        printf("client_id: %d, seq_num: %d, instruction: %d, args[0]: %d, args[1]: %d\n", com->client_id, com->seq_num, com->instruction_or_result, com->args[0], com->args[1]);
+        // printf("client_id: %d, seq_num: %d, instruction: %d, args[0]: %d, args[1]: %d\n", com->client_id, com->seq_num, com->instruction_or_result, com->args[0], com->args[1]);
         int i_client_id;
         if ((i_client_id = index_of_client_id(com->client_id)) == -1)
         {
+            if(num_clients == CALL_TABLE_SIZE)
+            {
+                // simply discard new packets from new clients after 100 client connections
+                continue;
+            }
             client *c = &call_table[num_clients];
             c->client_id = com->client_id;
             c->valid = 1;
@@ -183,15 +188,15 @@ int main(int argc, char **argv)
             }
             num_update_t = 0;
         }
-        if (num_clients == CALL_TABLE_SIZE)
-        {
-            for (size_t i = 0; i < CALL_TABLE_SIZE; i++)
-            {
-                // will never finish
-                pthread_join(threads[i], NULL);
-            }
-            num_clients = 0;
-        }
+        // if (num_clients == CALL_TABLE_SIZE)
+        // {
+        //     for (size_t i = 0; i < CALL_TABLE_SIZE; i++)
+        //     {
+        //         // will never finish
+        //         pthread_join(threads[i], NULL);
+        //     }
+        //     num_clients = 0;
+        // }
     }
 
     // will never get executed
