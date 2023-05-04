@@ -56,7 +56,7 @@ void *handle_client(void *arg)
         command response;
         if(c->instruction == 0)
         {
-            sleep(c->args[0]);
+            idle(c->args[0]);
         }
         else if (c->instruction == 1)
         {
@@ -67,10 +67,14 @@ void *handle_client(void *arg)
             response.instruction_or_result = put(c->args[0], c->args[1]);
         }
         c->current_com_finished = 1;
-        pthread_cond_signal(&c->cond_finish);
         response.client_id = c->client_id;
         response.seq_num = c->last_seq_number;
         send_packet(s, c->sock, c->slen, (char*) &response, sizeof(command));
+        pthread_cond_signal(&c->cond_finish);
+
+        pthread_mutex_lock(&c->client_mutex);
+        pthread_cond_wait(&c->cond_empty, &c->client_mutex);
+        pthread_mutex_unlock(&c->client_mutex);
     }
     return NULL;
 }
