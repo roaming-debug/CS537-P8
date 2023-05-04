@@ -10,6 +10,7 @@
 typedef struct client
 {
     int client_id;
+    int valid;
     int last_seq_number;
     int last_result;
     int instruction;
@@ -40,7 +41,7 @@ int index_of_client_id(int client_id)
 {
     for (size_t i = 0; i < CALL_TABLE_SIZE; i++)
     {
-        if (call_table[i].client_id == client_id)
+        if (call_table[i].client_id == client_id && call_table[i].valid == 1)
         {
             return i;
         }
@@ -152,6 +153,7 @@ int main(int argc, char **argv)
         {
             client *c = &call_table[num_clients];
             c->client_id = com->client_id;
+            c->valid = 1;
             c->last_seq_number = com->seq_num;
             c->last_result = 0;
             c->instruction = com->instruction_or_result;
