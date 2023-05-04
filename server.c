@@ -67,6 +67,7 @@ void *handle_client(void *arg)
             response.instruction_or_result = put(c->args[0], c->args[1]);
         }
         c->current_com_finished = 1;
+        c->last_result = response.instruction_or_result;
         response.client_id = c->client_id;
         response.seq_num = c->last_seq_number;
         response.ack = 0;
