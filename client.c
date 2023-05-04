@@ -41,7 +41,7 @@ void RPC_idle(struct rpc_connection *rpc, int time)
     struct packet_info packet;
     while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
-        if (packet.recv_len != 0) { // valid packet
+        if (packet.recv_len != -1) { // valid packet
             command recieved;
             memcpy(&recieved, packet.buf, sizeof(command));
             if (recieved.ack) {
@@ -61,7 +61,7 @@ void RPC_idle(struct rpc_connection *rpc, int time)
     }
     free(payload);
     if (num_tries > 5) {
-        printf("Error: RPC request timed out 5 times");
+        printf("Error: RPC request timed out 5 times\n");
         exit(1);
     }
 }
@@ -87,7 +87,7 @@ int RPC_get(struct rpc_connection *rpc, int key)
     int get_val;
     while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
-        if (packet.recv_len != 0) { // valid packet
+        if (packet.recv_len != -1) { // valid packet
             command recieved;
             memcpy(&recieved, packet.buf, sizeof(command));
             if (recieved.ack) {
@@ -108,7 +108,7 @@ int RPC_get(struct rpc_connection *rpc, int key)
     }
     free(payload);
     if (num_tries > 5) {
-        printf("Error: RPC request timed out 5 times");
+        printf("Error: RPC request timed out 5 times\n");
         exit(1);
     }
     return get_val;
@@ -136,7 +136,7 @@ int RPC_put(struct rpc_connection *rpc, int key, int value)
     int put_val;
     while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
-        if (packet.recv_len != 0) { // valid packet
+        if (packet.recv_len != -1) { // valid packet
             command recieved;
             memcpy(&recieved, packet.buf, sizeof(command));
             if (recieved.ack) {
@@ -157,7 +157,7 @@ int RPC_put(struct rpc_connection *rpc, int key, int value)
     }
     free(payload);
     if (num_tries > 5) {
-        printf("Error: RPC request timed out 5 times");
+        printf("Error: RPC request timed out 5 times\n");
         exit(1);
     }
     return put_val;
