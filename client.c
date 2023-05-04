@@ -1,15 +1,22 @@
 #include "client.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 #include "serialize_structs.h"
 
 struct rpc_connection RPC_init(int src_port, int dst_port, char dst_addr[])
 {
     struct rpc_connection connection;
     connection.recv_socket = init_socket(src_port);
-    populate_sockaddr(AF_INET, dst_port, dst_addr, &connection.dst_addr, &connection.dst_len);
+    struct sockaddr_storage addr;
+    socklen_t addrlen;
+    populate_sockaddr(AF_INET, dst_port, dst_addr, &addr, &addrlen);
+    connection.dst_addr = *((struct sockaddr *)(&addr));
+    connection.dst_len = addrlen;
     connection.seq_number = 0;
     connection.client_id = rand();
+    return connection;
 }
 
 // Sleeps the server thread for a few seconds
