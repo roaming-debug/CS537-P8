@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         struct packet_info packet = receive_packet(s);
         command *com = (command*) malloc(sizeof(command));
         *com = * (command *)packet.buf;
-        printf("client_id: %d, seq_num: %d, instruction: %d, args[0]: %d, args[1]: %d\n", com->client_id, com->seq_num, com->instruction_or_result, com->args[0], com->args[1]);
+        // printf("client_id: %d, seq_num: %d, instruction: %d, args[0]: %d, args[1]: %d\n", com->client_id, com->seq_num, com->instruction_or_result, com->args[0], com->args[1]);
         int i_client_id;
         if ((i_client_id = index_of_client_id(com->client_id)) == -1)
         {
