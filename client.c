@@ -33,12 +33,14 @@ void RPC_idle(struct rpc_connection *rpc, int time)
     while (num_tries <= 5) {
         packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
         if (packet.recv_len != 0) { // valid packet
-            if (strcmp(packet.buf, "ack")) { // TODO change this if different ack message
+            command recieved;
+            memcpy(&recieved, packet.buf, sizeof(command));
+            if (recieved.ack) {
                 sleep(1);
                 send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
                 num_tries = 1;
                 continue;
-            } else if (0) { // TODO change this to if packet has other client ID or old seq number
+            } else if (recieved.client_id != idle_call.client_id || recieved.seq_num < idle_call.seq_num) {
                 continue; // ignore
             } else { // correct packet recieived
                 break;
@@ -58,13 +60,98 @@ void RPC_idle(struct rpc_connection *rpc, int time)
 // gets the value of a key on the server store
 int RPC_get(struct rpc_connection *rpc, int key)
 {
+    // first pack client id, seq number, identifier for desired function (get=1), and args into payload
+    command get_call;
+    get_call.client_id = rpc->client_id;
+    get_call.seq_num = rpc->seq_number++;
+    get_call.instruction_or_result = 1;
+    get_call.args[0] = key;
 
+    char* payload = (char*)malloc(sizeof(command));
+    memcpy(payload, &get_call, sizeof(command));
+    
+    // then send packet with this payload
+    send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+    
+    int num_tries = 1;
+    struct packet_info packet;
+    int get_val;
+    while (num_tries <= 5) {
+        packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
+        if (packet.recv_len != 0) { // valid packet
+            command recieved;
+            memcpy(&recieved, packet.buf, sizeof(command));
+            if (recieved.ack) {
+                sleep(1);
+                send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+                num_tries = 1;
+                continue;
+            } else if (recieved.client_id != get_call.client_id || recieved.seq_num < get_call.seq_num) {
+                continue; // ignore
+            } else { // correct packet recieived
+                get_val = recieved.instruction_or_result;
+                break;
+            }
+        } else { // socket timed out, retry
+            send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+            num_tries++;
+        }
+    }
+    free(payload);
+    if (num_tries > 5) {
+        printf("Error: RPC request timed out 5 times");
+        exit(1);
+    }
+    return get_val;
 }
 
 // sets the value of a key on the server store
 int RPC_put(struct rpc_connection *rpc, int key, int value)
 {
+    // first pack client id, seq number, identifier for desired function (put=2), and args into payload
+    command put_call;
+    put_call.client_id = rpc->client_id;
+    put_call.seq_num = rpc->seq_number++;
+    put_call.instruction_or_result = 2;
+    put_call.args[0] = key;
+    put_call.args[1] = value;
+
+    char* payload = (char*)malloc(sizeof(command));
+    memcpy(payload, &put_call, sizeof(command));
     
+    // then send packet with this payload
+    send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+    
+    int num_tries = 1;
+    struct packet_info packet;
+    int put_val;
+    while (num_tries <= 5) {
+        packet = receive_packet_timeout(rpc->recv_socket, 1); // 1s timeout
+        if (packet.recv_len != 0) { // valid packet
+            command recieved;
+            memcpy(&recieved, packet.buf, sizeof(command));
+            if (recieved.ack) {
+                sleep(1);
+                send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+                num_tries = 1;
+                continue;
+            } else if (recieved.client_id != put_call.client_id || recieved.seq_num < put_call.seq_num) {
+                continue; // ignore
+            } else { // correct packet recieived
+                put_val = recieved.instruction_or_result;
+                break;
+            }
+        } else { // socket timed out, retry
+            send_packet(rpc->recv_socket, rpc->dst_addr, sizeof(rpc->dst_addr), payload, sizeof(command));
+            num_tries++;
+        }
+    }
+    free(payload);
+    if (num_tries > 5) {
+        printf("Error: RPC request timed out 5 times");
+        exit(1);
+    }
+    return put_val;
 }
 
 // closes the RPC connection to the server

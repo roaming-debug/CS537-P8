@@ -7,6 +7,7 @@ typedef struct command
     int seq_num;
     int instruction_or_result;
     int args[2];
+    int ack;
 } command;
 
 
