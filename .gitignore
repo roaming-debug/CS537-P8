@@ -5,3 +5,4 @@ app2b
 app3
 app4
 *.o
+.vscode/
